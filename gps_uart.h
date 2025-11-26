@@ -2,6 +2,7 @@
 
 #include <furi_hal.h>
 #include <notification/notification_messages.h>
+#include <storage/storage.h>
 
 #define RX_BUF_SIZE 1024
 #define UART_CH (FuriHalSerialIdUsart)
