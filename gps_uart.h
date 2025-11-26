@@ -40,6 +40,9 @@ typedef struct {
 	
     FuriHalSerialHandle* serial_handle;
 
+    Storage* storage;
+    File* log_file;
+
     GpsStatus status;
 } GpsUart;
 
