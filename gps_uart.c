@@ -1,6 +1,7 @@
 #include <string.h>
 
 #include <minmea.h>
+#include <storage/storage.h>
 #include "gps_uart.h"
 
 typedef enum {
@@ -133,6 +134,13 @@ static int32_t gps_uart_worker(void* context) {
                             // attempt to parse the line as a NMEA sentence
                             gps_uart_parse_nmea(gps_uart, line_current);
 
+                            if(gps_uart->log_file && storage_file_is_open(gps_uart->log_file)) {
+                                storage_file_write(
+                                    gps_uart->log_file, line_current, strlen(line_current));
+                                storage_file_write(gps_uart->log_file, "\n", 1);
+                                storage_file_sync(gps_uart->log_file);
+                            }
+
                             // move the cursor to the character after the newline
                             line_current = newline + 1;
                         } else // no more newlines found
@@ -187,6 +195,13 @@ void gps_uart_init_thread(GpsUart* gps_uart) {
 
     furi_thread_start(gps_uart->thread);
 
+    gps_uart->storage = furi_record_open(RECORD_STORAGE);
+    gps_uart->log_file = storage_file_alloc(gps_uart->storage);
+    if(!storage_file_open(
+           gps_uart->log_file, "/ext/gps_log.txt", FSAM_WRITE, FSOM_OPEN_APPEND)) {
+        FURI_LOG_E("GPS", "Failed to open log file");
+    }
+
     gps_uart_serial_init(gps_uart);
 }
 
@@ -195,6 +210,12 @@ void gps_uart_deinit_thread(GpsUart* gps_uart) {
     furi_thread_flags_set(furi_thread_get_id(gps_uart->thread), WorkerEvtStop);
     furi_thread_join(gps_uart->thread);
     furi_thread_free(gps_uart->thread);
+
+    if(gps_uart->log_file) {
+        storage_file_close(gps_uart->log_file);
+        storage_file_free(gps_uart->log_file);
+    }
+    furi_record_close(RECORD_STORAGE);
 }
 
 GpsUart* gps_uart_enable() {
