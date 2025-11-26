@@ -1,6 +1,6 @@
 App(
-    appid="gps_nmea",
-    name="[NMEA] GPS",
+    appid="gps_logger",
+    name="GPS Logger",
     apptype=FlipperAppType.EXTERNAL,
     entry_point="gps_app",
     requires=["gui"],
