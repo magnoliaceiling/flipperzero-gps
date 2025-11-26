@@ -1,5 +1,6 @@
 #include "gps_uart.h"
 #include "constants.h"
+#include <storage/storage.h>
 
 #include <furi.h>
 #include <furi_hal_power.h>
